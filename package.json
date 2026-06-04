@@ -1,0 +1,15 @@
+{
+  "name": "graduation-invitation",
+  "version": "1.0.0",
+  "description": "Graduation Invitation ASCII Tech Edition with Neon DB RSVP Integration",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "dependencies": {
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2",
+    "pg": "^8.12.0"
+  }
+}

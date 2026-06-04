@@ -1,0 +1,1162 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🎓 Thiệp Mời Lễ Tốt Nghiệp — ASCII Tech Edition</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600;700&family=Fira+Code:wght@300;400;500;600;700&display=swap');
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  :root {
+    --neon-green: #00ff41;
+    --neon-cyan: #00e5ff;
+    --neon-pink: #ff0090;
+    --neon-purple: #b388ff;
+    --neon-gold: #ffd700;
+    --neon-orange: #ff9800;
+    --dark-bg: #0a0a0f;
+    --card-bg: rgba(10, 10, 20, 0.85);
+  }
+
+  body {
+    background: var(--dark-bg);
+    color: var(--neon-green);
+    font-family: 'JetBrains Mono', 'Fira Code', monospace;
+    overflow-x: hidden;
+    min-height: 100vh;
+  }
+
+  #matrix-bg, #confetti-canvas {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    pointer-events: none;
+  }
+  #matrix-bg { z-index: 0; opacity: 0.15; }
+  #confetti-canvas { z-index: 999; }
+
+  .scanline {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    z-index: 2;
+    pointer-events: none;
+    background: repeating-linear-gradient(
+      0deg,
+      rgba(0, 0, 0, 0.05) 0px,
+      rgba(0, 0, 0, 0.05) 1px,
+      transparent 1px,
+      transparent 3px
+    );
+  }
+
+  #boot-screen {
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    background: #000;
+    color: var(--neon-green);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 40px;
+    font-size: clamp(11px, 1.4vw, 14px);
+    line-height: 1.7;
+    transition: opacity 0.8s ease;
+  }
+  #boot-screen.hidden { opacity: 0; pointer-events: none; }
+  .boot-line { white-space: pre-wrap; }
+  .boot-ok { color: var(--neon-green); }
+  .boot-warn { color: var(--neon-orange); }
+  .boot-info { color: var(--neon-cyan); }
+  .boot-progress { margin-top: 15px; color: var(--neon-gold); }
+
+  .toolbar {
+    position: fixed;
+    top: 15px;
+    right: 15px;
+    z-index: 100;
+    display: flex;
+    gap: 8px;
+    background: rgba(10, 10, 20, 0.85);
+    border: 1px solid rgba(0, 255, 65, 0.3);
+    padding: 8px 12px;
+    border-radius: 8px;
+    backdrop-filter: blur(8px);
+  }
+  .tool-btn {
+    background: transparent;
+    border: 1px solid rgba(0, 229, 255, 0.4);
+    color: var(--neon-cyan);
+    width: 36px; height: 36px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+  }
+  .tool-btn:hover {
+    background: rgba(0, 229, 255, 0.15);
+    border-color: var(--neon-cyan);
+    box-shadow: 0 0 12px rgba(0, 229, 255, 0.4);
+  }
+  .tool-btn.active {
+    background: rgba(0, 255, 65, 0.15);
+    border-color: var(--neon-green);
+    color: var(--neon-green);
+  }
+
+  .main-container {
+    position: relative;
+    z-index: 10;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-height: 100vh;
+    padding: 20px;
+  }
+
+  .ascii-header { text-align: center; margin-top: 30px; }
+  .ascii-art {
+    font-size: clamp(5px, 1.1vw, 11px);
+    line-height: 1.15;
+    white-space: pre;
+    color: var(--neon-gold);
+    text-shadow: 0 0 10px var(--neon-gold), 0 0 20px rgba(255, 215, 0, 0.5);
+    display: inline-block;
+    animation: titleGlow 4s ease-in-out infinite alternate;
+  }
+  @keyframes titleGlow {
+    from { text-shadow: 0 0 10px var(--neon-gold), 0 0 20px rgba(255, 215, 0, 0.5); }
+    to { text-shadow: 0 0 20px var(--neon-gold), 0 0 40px var(--neon-pink), 0 0 60px rgba(255, 215, 0, 0.6); }
+  }
+
+  .countdown-wrap { margin: 20px auto; text-align: center; }
+  .countdown-label {
+    color: var(--neon-cyan);
+    font-size: 12px;
+    letter-spacing: 4px;
+    margin-bottom: 12px;
+    opacity: 0.8;
+  }
+  .countdown {
+    display: inline-flex;
+    gap: 14px;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  .cd-unit {
+    background: rgba(10, 10, 20, 0.85);
+    border: 1px solid var(--neon-cyan);
+    border-radius: 8px;
+    padding: 12px 18px;
+    min-width: 80px;
+    box-shadow: 0 0 15px rgba(0, 229, 255, 0.25);
+  }
+  .cd-num {
+    font-size: clamp(22px, 4vw, 36px);
+    font-weight: 700;
+    color: var(--neon-gold);
+    text-shadow: 0 0 12px rgba(255, 215, 0, 0.7);
+    font-variant-numeric: tabular-nums;
+  }
+  .cd-lbl {
+    font-size: 10px;
+    color: #888;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin-top: 4px;
+  }
+
+  .terminal-card {
+    background: var(--card-bg);
+    border: 1px solid var(--neon-green);
+    border-radius: 12px;
+    width: 95%;
+    max-width: 780px;
+    margin: 20px auto;
+    box-shadow:
+      0 0 15px rgba(0, 255, 65, 0.3),
+      0 0 60px rgba(0, 255, 65, 0.1),
+      inset 0 0 30px rgba(0, 255, 65, 0.05);
+    overflow: hidden;
+    animation: cardGlow 3s ease-in-out infinite alternate;
+  }
+  @keyframes cardGlow {
+    from { box-shadow: 0 0 15px rgba(0, 255, 65, 0.2), 0 0 60px rgba(0, 255, 65, 0.05); }
+    to { box-shadow: 0 0 25px rgba(0, 255, 65, 0.4), 0 0 80px rgba(0, 255, 65, 0.1); }
+  }
+  .terminal-header {
+    background: linear-gradient(90deg, #1a1a2e, #16213e);
+    padding: 12px 16px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    border-bottom: 1px solid rgba(0, 255, 65, 0.3);
+  }
+  .terminal-dot { width: 12px; height: 12px; border-radius: 50%; display: inline-block; }
+  .dot-red { background: #ff5f57; box-shadow: 0 0 6px #ff5f57; }
+  .dot-yellow { background: #ffbd2e; box-shadow: 0 0 6px #ffbd2e; }
+  .dot-green { background: #28ca42; box-shadow: 0 0 6px #28ca42; }
+  .terminal-title { color: #888; font-size: 12px; margin-left: 10px; flex: 1; text-align: center; }
+  .terminal-body { padding: 25px 30px; min-height: 400px; }
+
+  .code-line {
+    margin: 4px 0;
+    opacity: 0;
+    transform: translateX(-10px);
+    font-size: clamp(11px, 1.4vw, 14px);
+    line-height: 1.7;
+  }
+  .code-line.visible {
+    opacity: 1;
+    transform: translateX(0);
+    transition: all 0.4s ease-out;
+  }
+  .prompt { color: var(--neon-cyan); }
+  .keyword { color: var(--neon-pink); }
+  .string { color: var(--neon-green); }
+  .comment { color: #666; font-style: italic; }
+  .variable { color: var(--neon-purple); }
+  .function { color: var(--neon-cyan); }
+  .operator { color: #ff6b6b; }
+  .number { color: var(--neon-gold); }
+  .bracket { color: #888; }
+  .decorator { color: #ff9800; }
+  .type { color: #4fc3f7; }
+  .special { color: var(--neon-gold); text-shadow: 0 0 8px var(--neon-gold); }
+  .editable { border-bottom: 1px dashed transparent; cursor: text; transition: all 0.2s; padding: 0 2px; }
+  .editable:hover { border-bottom-color: var(--neon-cyan); background: rgba(0, 229, 255, 0.08); }
+  .editable:focus { outline: none; border-bottom-color: var(--neon-gold); background: rgba(255, 215, 0, 0.08); }
+  .cursor-blink {
+    display: inline-block;
+    width: 8px; height: 16px;
+    background: var(--neon-green);
+    animation: blink 1s step-end infinite;
+    vertical-align: middle;
+    margin-left: 2px;
+  }
+  @keyframes blink { 50% { opacity: 0; } }
+
+  .grad-cap-section { text-align: center; margin: 20px 0; }
+  .grad-cap-ascii {
+    font-size: clamp(7px, 1vw, 10px);
+    line-height: 1.1;
+    white-space: pre;
+    color: var(--neon-gold);
+    text-shadow: 0 0 8px rgba(255, 215, 0, 0.6);
+    display: inline-block;
+    animation: float 4s ease-in-out infinite;
+  }
+  @keyframes float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-8px); }
+  }
+
+  .info-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 15px;
+    margin: 20px 0;
+  }
+  .info-box {
+    border: 1px solid rgba(0, 229, 255, 0.4);
+    border-radius: 8px;
+    padding: 15px;
+    text-align: center;
+    background: rgba(0, 229, 255, 0.05);
+    transition: all 0.3s ease;
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  .info-box.visible { opacity: 1; transform: translateY(0); }
+  .info-box:hover {
+    border-color: var(--neon-cyan);
+    box-shadow: 0 0 20px rgba(0, 229, 255, 0.2);
+    transform: translateY(-3px);
+  }
+  .info-icon {
+    font-size: 10px;
+    white-space: pre;
+    line-height: 1.1;
+    color: var(--neon-cyan);
+    margin-bottom: 8px;
+    display: block;
+  }
+  .info-label {
+    color: #888;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    margin-bottom: 5px;
+  }
+  .info-value {
+    color: var(--neon-gold);
+    font-size: 14px;
+    font-weight: 600;
+    text-shadow: 0 0 8px rgba(255, 215, 0, 0.4);
+  }
+
+  .action-row {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin: 30px 0 10px;
+  }
+  .action-btn {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    padding: 12px 24px;
+    background: transparent;
+    color: var(--neon-green);
+    border: 2px solid var(--neon-green);
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+  }
+  .action-btn:hover {
+    background: var(--neon-green);
+    color: var(--dark-bg);
+    box-shadow: 0 0 25px rgba(0, 255, 65, 0.5);
+    transform: scale(1.04);
+  }
+  .action-btn.cyan { color: var(--neon-cyan); border-color: var(--neon-cyan); }
+  .action-btn.cyan:hover { background: var(--neon-cyan); color: var(--dark-bg); box-shadow: 0 0 25px rgba(0, 229, 255, 0.5); }
+  .action-btn.gold { color: var(--neon-gold); border-color: var(--neon-gold); }
+  .action-btn.gold:hover { background: var(--neon-gold); color: var(--dark-bg); box-shadow: 0 0 25px rgba(255, 215, 0, 0.5); }
+
+  .modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.85);
+    z-index: 1000;
+    justify-content: center;
+    align-items: center;
+  }
+  .modal-overlay.active { display: flex; animation: fadeIn 0.3s ease; }
+  @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+  .modal-box {
+    background: #0a0a1a;
+    border: 2px solid var(--neon-gold);
+    border-radius: 12px;
+    padding: 40px;
+    text-align: center;
+    max-width: 520px;
+    width: 90%;
+    box-shadow: 0 0 40px rgba(255, 215, 0, 0.3);
+    animation: scaleIn 0.4s ease;
+  }
+  @keyframes scaleIn {
+    from { transform: scale(0.8); opacity: 0; }
+    to { transform: scale(1); opacity: 1; }
+  }
+  .modal-ascii {
+    font-size: 8px;
+    line-height: 1.1;
+    white-space: pre;
+    color: var(--neon-gold);
+    margin-bottom: 20px;
+  }
+  .modal-text { color: var(--neon-green); font-size: 18px; margin-bottom: 8px; }
+  .modal-sub {
+    color: #888;
+    font-size: 12px;
+    margin-bottom: 25px;
+    font-family: monospace;
+  }
+  .modal-close {
+    font-family: 'JetBrains Mono', monospace;
+    background: transparent;
+    border: 1px solid var(--neon-cyan);
+    color: var(--neon-cyan);
+    padding: 8px 24px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.3s;
+  }
+  .modal-close:hover { background: var(--neon-cyan); color: var(--dark-bg); }
+
+  .rsvp-form-group { margin-bottom: 16px; text-align: left; }
+  .rsvp-label {
+    display: block;
+    color: var(--neon-cyan);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    margin-bottom: 6px;
+  }
+  .rsvp-input, .rsvp-select, .rsvp-textarea {
+    width: 100%;
+    background: rgba(10, 10, 20, 0.9);
+    border: 1px solid var(--neon-green);
+    border-radius: 6px;
+    color: #fff;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    padding: 10px 12px;
+    outline: none;
+    transition: all 0.3s ease;
+  }
+  .rsvp-input:focus, .rsvp-select:focus, .rsvp-textarea:focus {
+    border-color: var(--neon-cyan);
+    box-shadow: 0 0 10px rgba(0, 229, 255, 0.3);
+    background: rgba(0, 229, 255, 0.05);
+  }
+  .rsvp-input::placeholder, .rsvp-textarea::placeholder { color: #555; }
+  .rsvp-submit-btn {
+    font-family: 'JetBrains Mono', monospace;
+    background: transparent;
+    border: 2px solid var(--neon-green);
+    color: var(--neon-green);
+    padding: 10px 24px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    font-size: 12px;
+    width: 100%;
+    margin-top: 10px;
+  }
+  .rsvp-submit-btn:hover:not(:disabled) {
+    background: var(--neon-green);
+    color: var(--dark-bg);
+    box-shadow: 0 0 15px rgba(0, 255, 65, 0.5);
+  }
+  .rsvp-submit-btn:disabled { border-color: #555; color: #555; cursor: not-allowed; }
+  .rsvp-cancel-btn {
+    font-family: 'JetBrains Mono', monospace;
+    background: transparent;
+    border: 1px solid #444;
+    color: #888;
+    padding: 8px 18px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.3s;
+    margin-top: 8px;
+    font-size: 11px;
+  }
+  .rsvp-cancel-btn:hover { color: #fff; border-color: #888; }
+  .rsvp-error-msg {
+    color: #ff5f57;
+    font-size: 11px;
+    margin-top: 6px;
+    display: none;
+    text-align: left;
+  }
+
+  .theme-panel {
+    position: fixed;
+    top: 80px;
+    right: 15px;
+    z-index: 99;
+    background: rgba(10, 10, 20, 0.95);
+    border: 1px solid rgba(0, 229, 255, 0.4);
+    border-radius: 8px;
+    padding: 12px;
+    display: none;
+    backdrop-filter: blur(10px);
+  }
+  .theme-panel.active { display: block; animation: fadeIn 0.2s; }
+  .theme-row { display: flex; gap: 8px; margin-bottom: 8px; }
+  .theme-row:last-child { margin-bottom: 0; }
+  .theme-dot {
+    width: 28px; height: 28px; border-radius: 50%;
+    cursor: pointer;
+    border: 2px solid transparent;
+    transition: all 0.2s;
+  }
+  .theme-dot.selected { border-color: #fff; box-shadow: 0 0 12px currentColor; }
+
+  .footer-section {
+    text-align: center;
+    padding: 20px;
+    color: #444;
+    font-size: 10px;
+    width: 95%;
+    max-width: 780px;
+  }
+  .footer-border {
+    white-space: pre;
+    color: #333;
+    margin-bottom: 10px;
+    font-size: 10px;
+    overflow: hidden;
+  }
+
+  .status-bar {
+    position: fixed;
+    bottom: 0; left: 0;
+    width: 100%;
+    background: rgba(0, 0, 0, 0.85);
+    border-top: 1px solid rgba(0, 255, 65, 0.3);
+    color: #888;
+    font-size: 11px;
+    padding: 6px 16px;
+    display: flex;
+    justify-content: space-between;
+    z-index: 50;
+    backdrop-filter: blur(8px);
+  }
+  .status-bar span { color: var(--neon-green); }
+  .status-bar .heart { color: var(--neon-pink); animation: heartbeat 1.5s ease-in-out infinite; }
+  @keyframes heartbeat {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.3); }
+  }
+
+  @media (max-width: 600px) {
+    .terminal-body { padding: 15px; }
+    .info-grid { grid-template-columns: 1fr; }
+    .ascii-art { font-size: 4.5px; }
+    .toolbar { top: auto; bottom: 35px; right: 10px; padding: 6px 8px; }
+    .tool-btn { width: 32px; height: 32px; }
+  }
+</style>
+</head>
+<body>
+
+<div id="boot-screen">
+  <div class="boot-line boot-info">[ <span style="color:#fff">SYSTEM</span> ] Initializing graduation_invitation.exe v1.0.0 ...</div>
+  <div class="boot-line"></div>
+  <div class="boot-line">[<span class="boot-ok">  OK  </span>] Loading kernel modules ...</div>
+  <div class="boot-line">[<span class="boot-ok">  OK  </span>] Mounting /dev/memories ...</div>
+  <div class="boot-line">[<span class="boot-ok">  OK  </span>] Starting matrix.service ...</div>
+  <div class="boot-line">[<span class="boot-ok">  OK  </span>] Starting confetti.service ...</div>
+  <div class="boot-line">[<span class="boot-warn"> WARN </span>] Fireworks service disabled by request</div>
+  <div class="boot-line">[<span class="boot-ok">  OK  </span>] Compiling thiệp_mời.tex ...</div>
+  <div class="boot-line">[<span class="boot-ok">  OK  </span>] Loaded 4 years of memories into RAM</div>
+  <div class="boot-line">[<span class="boot-ok">  OK  </span>] Final GPA: 3.8/4.0 — VALIDATED ✓</div>
+  <div class="boot-line"></div>
+  <div class="boot-line boot-progress" id="boot-prog">Loading [          ] 0%</div>
+</div>
+
+<canvas id="matrix-bg"></canvas>
+<canvas id="confetti-canvas"></canvas>
+<div class="scanline"></div>
+
+<div class="toolbar">
+  <button class="tool-btn" id="btn-music" title="Bật/tắt nhạc nền">♪</button>
+  <button class="tool-btn" id="btn-theme" title="Đổi màu chủ đề">◐</button>
+  <button class="tool-btn" id="btn-fs" title="Toàn màn hình">⛶</button>
+</div>
+
+<div class="theme-panel" id="theme-panel">
+  <div class="theme-row">
+    <div class="theme-dot selected" style="background:#00ff41;color:#00ff41" data-theme="green"></div>
+    <div class="theme-dot" style="background:#00e5ff;color:#00e5ff" data-theme="cyan"></div>
+    <div class="theme-dot" style="background:#ff0090;color:#ff0090" data-theme="pink"></div>
+  </div>
+  <div class="theme-row">
+    <div class="theme-dot" style="background:#ffd700;color:#ffd700" data-theme="gold"></div>
+    <div class="theme-dot" style="background:#b388ff;color:#b388ff" data-theme="purple"></div>
+    <div class="theme-dot" style="background:#ff9800;color:#ff9800" data-theme="orange"></div>
+  </div>
+</div>
+
+<div class="main-container">
+  <div class="ascii-header">
+    <pre class="ascii-art" id="main-ascii">
+    ██████╗ ██████╗  █████╗ ██████╗ ██╗   ██╗ █████╗ ████████╗██╗ ██████╗ ███╗   ██╗
+   ██╔════╝ ██╔══██╗██╔══██╗██╔══██╗██║   ██║██╔══██╗╚══██╔══╝██║██╔═══██╗████╗  ██║
+   ██║  ███╗██████╔╝███████║██║  ██║██║   ██║███████║   ██║   ██║██║   ██║██╔██╗ ██║
+   ██║   ██║██╔══██╗██╔══██║██║  ██║██║   ██║██╔══██║   ██║   ██║██║   ██║██║╚██╗██║
+   ╚██████╔╝██║  ██║██║  ██║██████╔╝╚██████╔╝██║  ██║   ██║   ██║╚██████╔╝██║ ╚████║
+    ╚═════╝ ╚═╝  ╚═╝╚═╝  ╚═╝╚═════╝  ╚═════╝ ╚═╝  ╚═╝   ╚═╝   ╚═╝ ╚═════╝ ╚═╝  ╚═══╝
+        ╔═══════════════════════════════════════════════════════════════════╗
+        ║    ★  C E R E M O N Y   I N V I T A T I O N   2 0 2 6   ★      ║
+        ╚═══════════════════════════════════════════════════════════════════╝
+    </pre>
+  </div>
+
+  <div class="countdown-wrap">
+    <div class="countdown-label">&gt; TIME_UNTIL_CEREMONY.exe</div>
+    <div class="countdown" id="countdown">
+      <div class="cd-unit"><div class="cd-num" id="cd-days">00</div><div class="cd-lbl">Days</div></div>
+      <div class="cd-unit"><div class="cd-num" id="cd-hours">00</div><div class="cd-lbl">Hours</div></div>
+      <div class="cd-unit"><div class="cd-num" id="cd-mins">00</div><div class="cd-lbl">Mins</div></div>
+      <div class="cd-unit"><div class="cd-num" id="cd-secs">00</div><div class="cd-lbl">Secs</div></div>
+    </div>
+  </div>
+
+  <div class="terminal-card">
+    <div class="terminal-header">
+      <span class="terminal-dot dot-red"></span>
+      <span class="terminal-dot dot-yellow"></span>
+      <span class="terminal-dot dot-green"></span>
+      <span class="terminal-title">graduation_invitation.py — bash — 80×40</span>
+    </div>
+    <div class="terminal-body" id="terminal-body">
+      <div class="grad-cap-section code-line">
+        <pre class="grad-cap-ascii">
+         _______________
+        /               \
+       /    ┌───────┐    \
+      /     │ ▓▓▓▓▓ │     \
+     /______│_______│______\
+     ████████████████████████
+            │       │
+            │  ╔═╗  │
+            │  ║★║  │
+            └──╚═╝──┘
+        </pre>
+      </div>
+
+      <div class="code-line"><span class="comment">#!/usr/bin/env python3</span></div>
+      <div class="code-line"><span class="comment"># -*- coding: utf-8 -*-</span></div>
+      <div class="code-line">&nbsp;</div>
+      <div class="code-line"><span class="keyword">from</span> <span class="variable">future</span> <span class="keyword">import</span> <span class="function">success</span>, <span class="function">happiness</span>, <span class="function">dreams</span></div>
+      <div class="code-line"><span class="keyword">from</span> <span class="variable">university</span> <span class="keyword">import</span> <span class="function">GraduationCeremony</span></div>
+      <div class="code-line">&nbsp;</div>
+      <div class="code-line"><span class="decorator">@with_honor</span></div>
+      <div class="code-line"><span class="keyword">class</span> <span class="function">GraduationInvitation</span><span class="bracket">(</span><span class="type">Ceremony</span><span class="bracket">)</span><span class="operator">:</span></div>
+      <div class="code-line">&nbsp;</div>
+      <div class="code-line">&nbsp;&nbsp;&nbsp;&nbsp;<span class="special">★ TRÂN TRỌNG KÍNH MỜI ★</span></div>
+      <div class="code-line">&nbsp;</div>
+      <div class="code-line">&nbsp;&nbsp;&nbsp;&nbsp;<span class="variable">graduate</span> <span class="operator">=</span> <span class="string">"<span class="editable" contenteditable="true" data-field="name">[Họ và Tên Sinh Viên]</span>"</span></div>
+      <div class="code-line">&nbsp;&nbsp;&nbsp;&nbsp;<span class="variable">degree</span> <span class="operator">=</span> <span class="string">"<span class="editable" contenteditable="true" data-field="degree">Cử nhân Công nghệ Thông tin</span>"</span></div>
+      <div class="code-line">&nbsp;&nbsp;&nbsp;&nbsp;<span class="variable">university</span> <span class="operator">=</span> <span class="string">"<span class="editable" contenteditable="true" data-field="uni">Đại học Bách Khoa</span>"</span></div>
+      <div class="code-line">&nbsp;&nbsp;&nbsp;&nbsp;<span class="variable">gpa</span> <span class="operator">=</span> <span class="number"><span class="editable" contenteditable="true" data-field="gpa">3.8</span></span>  <span class="comment"># Giỏi 🏆</span></div>
+      <div class="code-line">&nbsp;</div>
+      <div class="code-line">&nbsp;&nbsp;&nbsp;&nbsp;<span class="keyword">def</span> <span class="function">ceremony_details</span><span class="bracket">(</span><span class="variable">self</span><span class="bracket">)</span><span class="operator">:</span></div>
+      <div class="code-line">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="keyword">return</span> <span class="bracket">{</span></div>
+      <div class="code-line">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="string">"date"</span><span class="operator">:</span> <span class="string">"<span class="editable" contenteditable="true" data-field="date">15/07/2026</span>"</span><span class="operator">,</span></div>
+      <div class="code-line">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="string">"time"</span><span class="operator">:</span> <span class="string">"<span class="editable" contenteditable="true" data-field="time">08:00 AM</span>"</span><span class="operator">,</span></div>
+      <div class="code-line">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="string">"venue"</span><span class="operator">:</span> <span class="string">"<span class="editable" contenteditable="true" data-field="venue">Hội trường lớn - Tầng 5</span>"</span><span class="operator">,</span></div>
+      <div class="code-line">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="string">"dress_code"</span><span class="operator">:</span> <span class="string">"Lễ phục tốt nghiệp"</span><span class="operator">,</span></div>
+      <div class="code-line">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="bracket">}</span></div>
+      <div class="code-line">&nbsp;</div>
+      <div class="code-line">&nbsp;&nbsp;&nbsp;&nbsp;<span class="keyword">def</span> <span class="function">message</span><span class="bracket">(</span><span class="variable">self</span><span class="bracket">)</span><span class="operator">:</span></div>
+      <div class="code-line">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="keyword">print</span><span class="bracket">(</span><span class="string">"Sự hiện diện của Quý vị là niềm vinh dự"</span><span class="bracket">)</span></div>
+      <div class="code-line">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="keyword">print</span><span class="bracket">(</span><span class="string">"lớn lao cho buổi lễ của chúng tôi."</span><span class="bracket">)</span></div>
+      <div class="code-line">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="keyword">return</span> <span class="special">∞</span> <span class="comment"># gratitude.max()</span></div>
+      <div class="code-line">&nbsp;</div>
+      <div class="code-line"><span class="comment"># ═══════════════════════════════════════</span></div>
+      <div class="code-line"><span class="keyword">if</span> <span class="variable">__name__</span> <span class="operator">==</span> <span class="string">"__main__"</span><span class="operator">:</span></div>
+      <div class="code-line">&nbsp;&nbsp;&nbsp;&nbsp;<span class="variable">invitation</span> <span class="operator">=</span> <span class="function">GraduationInvitation</span><span class="bracket">()</span></div>
+      <div class="code-line">&nbsp;&nbsp;&nbsp;&nbsp;<span class="variable">invitation</span>.<span class="function">send</span><span class="bracket">(</span><span class="variable">to</span><span class="operator">=</span><span class="string">"Quý Khách"</span><span class="bracket">)</span><span class="cursor-blink"></span></div>
+
+      <div class="info-grid" style="margin-top: 25px;">
+        <div class="info-box">
+          <span class="info-icon">┌──────┐
+│ ◷    │
+│ DATE │
+└──────┘</span>
+          <div class="info-label">Ngày</div>
+          <div class="info-value" id="info-date">15 / 07 / 2026</div>
+        </div>
+        <div class="info-box">
+          <span class="info-icon">┌──────┐
+│ ⏰   │
+│ TIME │
+└──────┘</span>
+          <div class="info-label">Thời gian</div>
+          <div class="info-value" id="info-time">08:00 AM</div>
+        </div>
+        <div class="info-box">
+          <span class="info-icon">┌──────┐
+│ ◉    │
+│ ADDR │
+└──────┘</span>
+          <div class="info-label">Địa điểm</div>
+          <div class="info-value" id="info-venue">Hội trường lớn</div>
+        </div>
+      </div>
+
+      <div class="action-row">
+        <button class="action-btn" id="rsvp-btn">&gt; XÁC NHẬN _</button>
+        <button class="action-btn cyan" id="share-btn">⎘ CHIA SẺ</button>
+        <button class="action-btn gold" id="print-btn">⎙ IN THIỆP</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="footer-section">
+    <div class="footer-border">════════════════════════════════════════════════════════════════</div>
+    <div style="color: #555;">
+      <span class="string">"Education is not the filling of a pail, but the lighting of a fire."</span><br>
+      <span class="comment">— W.B. Yeats</span>
+    </div>
+    <div style="margin-top: 10px; color: #333;">╚══ Compiled with ❤ &amp; pride ══╝</div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modal">
+  <div class="modal-box">
+    <div id="modal-form-container">
+      <div style="font-size: 13px; color: var(--neon-cyan); margin-bottom: 20px; letter-spacing: 2px; text-transform: uppercase; font-family: 'JetBrains Mono', monospace; text-shadow: 0 0 8px rgba(0, 229, 255, 0.4);">
+        &gt; CẤP_NHẬT_THÔNG_TIN_RSVP.sh
+      </div>
+      <form id="rsvp-form" onsubmit="return false;">
+        <div class="rsvp-form-group">
+          <label class="rsvp-label" for="rsvp-name">Họ &amp; Tên *</label>
+          <input type="text" id="rsvp-name" class="rsvp-input" placeholder="[ Nhập họ và tên của bạn ]" autocomplete="off" required>
+        </div>
+        <div class="rsvp-form-group" style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+          <div>
+            <label class="rsvp-label" for="rsvp-status">Trạng thái *</label>
+            <select id="rsvp-status" class="rsvp-select">
+              <option value="attending">Sẽ tham gia ✓</option>
+              <option value="not_attending">Không tham gia ✗</option>
+            </select>
+          </div>
+          <div>
+            <label class="rsvp-label" for="rsvp-rel">Mối quan hệ</label>
+            <select id="rsvp-rel" class="rsvp-select">
+              <option value="Bạn bè">Bạn bè</option>
+              <option value="Đồng nghiệp">Đồng nghiệp</option>
+              <option value="Gia đình">Gia đình</option>
+              <option value="Thầy cô">Thầy cô</option>
+              <option value="Khác">Khác</option>
+            </select>
+          </div>
+        </div>
+        <div class="rsvp-form-group">
+          <label class="rsvp-label" for="rsvp-wishes">Lời chúc gửi tân cử nhân</label>
+          <textarea id="rsvp-wishes" class="rsvp-textarea" placeholder="[ Gửi lời chúc tốt đẹp của bạn... ]" rows="3"></textarea>
+        </div>
+        <div class="rsvp-error-msg" id="rsvp-error"></div>
+        <button type="submit" id="rsvp-submit" class="rsvp-submit-btn">&gt; GỬI XÁC NHẬN _</button>
+        <button type="button" id="rsvp-cancel" class="rsvp-cancel-btn">[ HỦY ]</button>
+      </form>
+    </div>
+
+    <div id="modal-success-container" style="display: none;">
+      <pre class="modal-ascii">
+    ★  ★  ★  ★  ★  ★  ★
+  ★                        ★
+★    ████████╗██╗  ██╗██╗  ★
+★    ╚══██╔══╝██║  ██║██║  ★
+★       ██║   ███████║██║  ★
+★       ██║   ██╔══██║╚═╝  ★
+★       ██║   ██║  ██║██╗  ★
+★       ╚═╝   ╚═╝  ╚═╝╚═╝  ★
+  ★                        ★
+    ★  ★  ★  ★  ★  ★  ★
+      </pre>
+      <div class="modal-text" id="modal-text">Xác nhận thành công!</div>
+      <div class="modal-sub" id="modal-sub">return "Hẹn gặp bạn tại buổi lễ!" // exit(0)</div>
+      <button class="modal-close" id="modal-close">[ OK ]</button>
+    </div>
+  </div>
+</div>
+
+<div class="status-bar">
+  <div>$ status: <span>READY</span> | uptime: <span id="uptime">00:00:00</span></div>
+  <div>FPS: <span id="fps">60</span> | mem: <span>3.8/4.0 GPA</span> <span class="heart">♥</span></div>
+</div>
+
+<script>
+'use strict';
+
+(function bootSequence() {
+  const progEl = document.getElementById('boot-prog');
+  const boot = document.getElementById('boot-screen');
+  let p = 0;
+  const tick = setInterval(() => {
+    p += Math.random() * 18 + 8;
+    if (p >= 100) {
+      p = 100;
+      clearInterval(tick);
+      const bars = '█'.repeat(10);
+      progEl.innerHTML = `Loading [${bars}] 100%  <span class="boot-ok">[DONE]</span>`;
+      setTimeout(() => {
+        boot.classList.add('hidden');
+        setTimeout(() => boot.remove(), 800);
+        revealLines();
+        startMainLoop();
+      }, 600);
+      return;
+    }
+    const filled = Math.floor(p / 10);
+    const bars = '█'.repeat(filled) + ' '.repeat(10 - filled);
+    progEl.innerHTML = `Loading [${bars}] ${Math.floor(p)}%`;
+  }, 180);
+})();
+
+const W = () => window.innerWidth;
+const H = () => window.innerHeight;
+
+function resizeCanvas(c) {
+  c.width = W();
+  c.height = H();
+}
+
+function onResize(fns) {
+  let t;
+  window.addEventListener('resize', () => {
+    clearTimeout(t);
+    t = setTimeout(() => fns.forEach(f => f()), 150);
+  });
+}
+
+const matrixCanvas = document.getElementById('matrix-bg');
+const mCtx = matrixCanvas.getContext('2d');
+const confettiCanvas = document.getElementById('confetti-canvas');
+const confCtx = confettiCanvas.getContext('2d');
+
+resizeCanvas(matrixCanvas);
+resizeCanvas(confettiCanvas);
+onResize([
+  () => { resizeCanvas(matrixCanvas); resetMatrix(); },
+  () => resizeCanvas(confettiCanvas),
+]);
+
+const FONT_SIZE = 14;
+const MATRIX_CHARS = '01アカサタナハマヤラワ{}[]<>+=;:#$@!?★◆▲▼'.split('');
+let drops, matrixCols;
+
+function resetMatrix() {
+  matrixCols = Math.floor(W() / FONT_SIZE);
+  drops = new Float32Array(matrixCols).fill(1);
+}
+resetMatrix();
+
+let lastMatrixTime = 0;
+let frameCount = 0;
+let fpsAcc = 0;
+const fpsEl = document.getElementById('fps');
+
+function drawMatrix(now) {
+  if (now - lastMatrixTime < 50) return;
+  lastMatrixTime = now;
+  mCtx.fillStyle = 'rgba(10,10,15,0.07)';
+  mCtx.fillRect(0, 0, matrixCanvas.width, matrixCanvas.height);
+  mCtx.font = FONT_SIZE + 'px monospace';
+  const themeColor = getComputedStyle(document.documentElement).getPropertyValue('--neon-green').trim() || '#00ff41';
+  mCtx.fillStyle = themeColor;
+  for (let i = 0; i < matrixCols; i++) {
+    const char = MATRIX_CHARS[Math.random() * MATRIX_CHARS.length | 0];
+    const x = i * FONT_SIZE;
+    const y = drops[i] * FONT_SIZE;
+    mCtx.globalAlpha = Math.random() > 0.6 ? 1 : 0.35;
+    mCtx.fillText(char, x, y);
+    if (drops[i] * FONT_SIZE > matrixCanvas.height && Math.random() > 0.975) drops[i] = 0;
+    drops[i]++;
+  }
+  mCtx.globalAlpha = 1;
+}
+
+const CONF_COLORS = ['#ffd700','#00ff41','#ff0090','#00e5ff','#b388ff','#ff6b6b','#ffbd2e'];
+const confData = [];
+
+function launchConfetti() {
+  const total = 80;
+  for (let i = 0; i < total; i++) {
+    setTimeout(() => {
+      confData.push({
+        x: Math.random() * W(),
+        y: -10,
+        vx: (Math.random() - 0.5) * 3,
+        vy: Math.random() * 2.5 + 1.5,
+        rot: Math.random() * 360,
+        rotV: (Math.random() - 0.5) * 8,
+        size: Math.random() * 7 + 3,
+        color: CONF_COLORS[Math.random() * CONF_COLORS.length | 0],
+        shape: Math.random() < 0.5 ? 0 : 1,
+        alpha: 1,
+      });
+    }, i * 25);
+  }
+}
+
+function updateDrawConfetti(ctx) {
+  ctx.clearRect(0, 0, confettiCanvas.width, confettiCanvas.height);
+  for (let i = confData.length - 1; i >= 0; i--) {
+    const c = confData[i];
+    c.x += c.vx; c.y += c.vy; c.rot += c.rotV; c.vx *= 0.99;
+    if (c.y > H() * 0.75) c.alpha -= 0.025;
+    if (c.alpha <= 0) { confData.splice(i, 1); continue; }
+    ctx.save();
+    ctx.translate(c.x, c.y);
+    ctx.rotate(c.rot * 0.01745);
+    ctx.globalAlpha = c.alpha;
+    ctx.fillStyle = c.color;
+    if (c.shape === 0) ctx.fillRect(-c.size/2, -c.size/2, c.size, c.size * 0.55);
+    else { ctx.beginPath(); ctx.arc(0, 0, c.size/2, 0, 6.283); ctx.fill(); }
+    ctx.restore();
+  }
+  ctx.globalAlpha = 1;
+}
+
+function mainLoop(now) {
+  frameCount++;
+  if (now - fpsAcc >= 1000) {
+    fpsEl.textContent = frameCount;
+    frameCount = 0;
+    fpsAcc = now;
+  }
+  drawMatrix(now);
+  updateDrawConfetti(confCtx);
+  requestAnimationFrame(mainLoop);
+}
+function startMainLoop() {
+  requestAnimationFrame(mainLoop);
+}
+
+function revealLines() {
+  const codeLines = document.querySelectorAll('.code-line');
+  const infoBoxes = document.querySelectorAll('.info-box');
+  codeLines.forEach((line, i) => {
+    setTimeout(() => line.classList.add('visible'), 100 + i * 80);
+  });
+  const total = 100 + codeLines.length * 80;
+  infoBoxes.forEach((box, i) => {
+    setTimeout(() => box.classList.add('visible'), total + 200 + i * 250);
+  });
+}
+
+function getTargetDate() {
+  const v = document.querySelector('[data-field="date"]')?.textContent || '15/07/2026';
+  const t = document.querySelector('[data-field="time"]')?.textContent || '08:00 AM';
+  const [d, m, y] = v.split('/').map(s => s.trim());
+  let [hh, mm] = (t.match(/(\d+):(\d+)/) || ['', '8', '00']).slice(1);
+  hh = parseInt(hh); mm = parseInt(mm);
+  if (/PM/i.test(t) && hh < 12) hh += 12;
+  return new Date(parseInt(y), parseInt(m) - 1, parseInt(d), hh, mm, 0);
+}
+function updateCountdown() {
+  const target = getTargetDate();
+  const now = new Date();
+  let diff = target - now;
+  if (diff < 0) diff = 0;
+  const days = Math.floor(diff / 86400000);
+  const hours = Math.floor((diff % 86400000) / 3600000);
+  const mins = Math.floor((diff % 3600000) / 60000);
+  const secs = Math.floor((diff % 60000) / 1000);
+  document.getElementById('cd-days').textContent = String(days).padStart(3, '0');
+  document.getElementById('cd-hours').textContent = String(hours).padStart(2, '0');
+  document.getElementById('cd-mins').textContent = String(mins).padStart(2, '0');
+  document.getElementById('cd-secs').textContent = String(secs).padStart(2, '0');
+}
+setInterval(updateCountdown, 1000);
+updateCountdown();
+
+const startTime = Date.now();
+setInterval(() => {
+  const t = Math.floor((Date.now() - startTime) / 1000);
+  const h = String(Math.floor(t / 3600)).padStart(2, '0');
+  const m = String(Math.floor((t % 3600) / 60)).padStart(2, '0');
+  const s = String(t % 60).padStart(2, '0');
+  document.getElementById('uptime').textContent = `${h}:${m}:${s}`;
+}, 1000);
+
+document.querySelectorAll('.editable').forEach(el => {
+  el.addEventListener('input', () => {
+    const f = el.dataset.field;
+    const v = el.textContent;
+    if (f === 'date') document.getElementById('info-date').textContent = v;
+    if (f === 'time') document.getElementById('info-time').textContent = v;
+    if (f === 'venue') document.getElementById('info-venue').textContent = v;
+  });
+  el.addEventListener('keydown', e => {
+    if (e.key === 'Enter') { e.preventDefault(); el.blur(); }
+  });
+});
+
+let audioCtx = null;
+let musicOn = false;
+let musicTimer = null;
+
+function playNote(freq, dur = 0.3, type = 'sine', vol = 0.08) {
+  if (!audioCtx) return;
+  const osc = audioCtx.createOscillator();
+  const gain = audioCtx.createGain();
+  osc.type = type; osc.frequency.value = freq;
+  gain.gain.setValueAtTime(0, audioCtx.currentTime);
+  gain.gain.linearRampToValueAtTime(vol, audioCtx.currentTime + 0.02);
+  gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + dur);
+  osc.connect(gain); gain.connect(audioCtx.destination);
+  osc.start(); osc.stop(audioCtx.currentTime + dur);
+}
+
+function playChime() {
+  if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  const notes = [523.25, 659.25, 783.99, 1046.50];
+  notes.forEach((f, i) => setTimeout(() => playNote(f, 0.4, 'sine', 0.06), i * 100));
+}
+
+function playMelody() {
+  if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  const seq = [
+    [392, 0.3], [523, 0.3], [493, 0.6],
+    [392, 0.3], [523, 0.3], [493, 0.6],
+    [440, 0.3], [466, 0.3], [523, 0.6],
+    [392, 0.6], [0, 0.3],
+  ];
+  let t = 0;
+  seq.forEach(([f, d]) => {
+    setTimeout(() => { if (musicOn && f > 0) playNote(f, d * 0.9, 'triangle', 0.05); }, t * 1000);
+    t += d;
+  });
+  return t * 1000;
+}
+
+document.getElementById('btn-music').addEventListener('click', (e) => {
+  musicOn = !musicOn;
+  e.currentTarget.classList.toggle('active', musicOn);
+  if (musicOn) {
+    if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    const loop = () => {
+      if (!musicOn) return;
+      const dur = playMelody();
+      musicTimer = setTimeout(loop, dur + 600);
+    };
+    loop();
+  } else if (musicTimer) {
+    clearTimeout(musicTimer);
+  }
+});
+
+document.getElementById('btn-theme').addEventListener('click', (e) => {
+  document.getElementById('theme-panel').classList.toggle('active');
+  e.currentTarget.classList.toggle('active');
+});
+
+const themes = {
+  green: { main: '#00ff41', glow: 'rgba(0, 255, 65,' },
+  cyan:  { main: '#00e5ff', glow: 'rgba(0, 229, 255,' },
+  pink:  { main: '#ff0090', glow: 'rgba(255, 0, 144,' },
+  gold:  { main: '#ffd700', glow: 'rgba(255, 215, 0,' },
+  purple:{ main: '#b388ff', glow: 'rgba(179, 136, 255,' },
+  orange:{ main: '#ff9800', glow: 'rgba(255, 152, 0,' },
+};
+
+document.querySelectorAll('.theme-dot').forEach(dot => {
+  dot.addEventListener('click', () => {
+    document.querySelectorAll('.theme-dot').forEach(d => d.classList.remove('selected'));
+    dot.classList.add('selected');
+    const t = themes[dot.dataset.theme];
+    document.documentElement.style.setProperty('--neon-green', t.main);
+    document.querySelector('.terminal-card').style.borderColor = t.main;
+    document.querySelector('.terminal-card').style.boxShadow = `0 0 20px ${t.glow}0.4), 0 0 60px ${t.glow}0.1)`;
+  });
+});
+
+document.getElementById('btn-fs').addEventListener('click', () => {
+  if (!document.fullscreenElement) document.documentElement.requestFullscreen?.();
+  else document.exitFullscreen?.();
+});
+
+const rsvpForm = document.getElementById('rsvp-form');
+const rsvpSubmitBtn = document.getElementById('rsvp-submit');
+const rsvpErrorEl = document.getElementById('rsvp-error');
+const modalFormContainer = document.getElementById('modal-form-container');
+const modalSuccessContainer = document.getElementById('modal-success-container');
+
+document.getElementById('rsvp-btn').addEventListener('click', () => {
+  modalFormContainer.style.display = 'block';
+  modalSuccessContainer.style.display = 'none';
+  rsvpErrorEl.style.display = 'none';
+  rsvpForm.reset();
+  rsvpSubmitBtn.disabled = false;
+  rsvpSubmitBtn.textContent = '> GỬI XÁC NHẬN _';
+  document.getElementById('modal').classList.add('active');
+});
+
+function apiUrl(path) {
+  if (window.location.protocol === 'file:') return `http://127.0.0.1:3000${path}`;
+  return path;
+}
+
+rsvpForm.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const name = document.getElementById('rsvp-name').value.trim();
+  const status = document.getElementById('rsvp-status').value;
+  const relationship = document.getElementById('rsvp-rel').value;
+  const wishes = document.getElementById('rsvp-wishes').value.trim();
+  rsvpErrorEl.style.display = 'none';
+  rsvpErrorEl.textContent = '';
+
+  if (!name) return showRsvpError('Vui lòng nhập họ và tên.');
+  if (name.length < 2 || name.length > 100) return showRsvpError('Họ và tên phải từ 2 đến 100 ký tự.');
+  if (wishes.length > 1000) return showRsvpError('Lời chúc không được vượt quá 1000 ký tự.');
+
+  rsvpSubmitBtn.disabled = true;
+  rsvpSubmitBtn.textContent = 'SAVING TO DATABASE...';
+
+  try {
+    const response = await fetch(apiUrl('/api/rsvp'), {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name, status, relationship, wishes }),
+    });
+    const result = await response.json();
+    if (!response.ok) throw new Error(result.error || 'Có lỗi xảy ra khi lưu thông tin.');
+
+    modalFormContainer.style.display = 'none';
+    modalSuccessContainer.style.display = 'block';
+    launchConfetti();
+    playChime();
+    rsvpForm.reset();
+  } catch (error) {
+    const hint = window.location.protocol === 'file:' ? ' Hãy chạy npm run dev và mở http://127.0.0.1:3000.' : '';
+    showRsvpError(error.message + hint);
+    rsvpSubmitBtn.disabled = false;
+    rsvpSubmitBtn.textContent = '> GỬI XÁC NHẬN _';
+  }
+});
+
+function showRsvpError(msg) {
+  rsvpErrorEl.textContent = '[ ERROR ] ' + msg;
+  rsvpErrorEl.style.display = 'block';
+}
+
+document.getElementById('rsvp-cancel').addEventListener('click', () => {
+  document.getElementById('modal').classList.remove('active');
+});
+
+document.getElementById('share-btn').addEventListener('click', async () => {
+  const url = window.location.href;
+  const text = '🎓 Mời bạn dự lễ tốt nghiệp của tôi!';
+  if (navigator.share) {
+    try { await navigator.share({ title: text, url }); }
+    catch(e) {}
+  } else {
+    try {
+      await navigator.clipboard.writeText(url);
+      modalFormContainer.style.display = 'none';
+      modalSuccessContainer.style.display = 'block';
+      document.getElementById('modal-text').textContent = 'Đã copy link!';
+      document.getElementById('modal-sub').textContent = 'clipboard.write(url) // success';
+      document.getElementById('modal').classList.add('active');
+    } catch(e) {
+      alert('Link: ' + url);
+    }
+  }
+});
+
+document.getElementById('print-btn').addEventListener('click', () => window.print());
+
+document.getElementById('modal-close').addEventListener('click', () => {
+  document.getElementById('modal').classList.remove('active');
+  document.getElementById('modal-text').textContent = 'Xác nhận thành công!';
+  document.getElementById('modal-sub').textContent = 'return "Hẹn gặp bạn tại buổi lễ!" // exit(0)';
+});
+
+document.getElementById('modal').addEventListener('click', (e) => {
+  if (e.target === e.currentTarget) document.getElementById('modal').classList.remove('active');
+});
+
+let konami = [];
+const seq = ['ArrowUp', 'ArrowUp', 'ArrowDown', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'ArrowLeft', 'ArrowRight'];
+document.addEventListener('keydown', (e) => {
+  konami.push(e.key);
+  if (konami.length > seq.length) konami.shift();
+  if (konami.join(',') === seq.join(',')) {
+    launchConfetti();
+    konami = [];
+  }
+});
+</script>
+</body>
+</html>
