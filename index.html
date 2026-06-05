@@ -514,6 +514,113 @@
     50% { transform: scale(1.3); }
   }
 
+  .map-link {
+    display: inline-block;
+    margin-top: 8px;
+    color: var(--neon-cyan);
+    font-size: 11px;
+    text-decoration: none;
+    border: 1px solid rgba(0, 229, 255, 0.4);
+    padding: 4px 12px;
+    border-radius: 4px;
+    cursor: pointer;
+    background: transparent;
+    font-family: 'JetBrains Mono', monospace;
+    letter-spacing: 1px;
+    transition: all 0.2s;
+  }
+  .map-link:hover { background: rgba(0, 229, 255, 0.15); border-color: var(--neon-cyan); box-shadow: 0 0 10px rgba(0,229,255,0.3); }
+
+  /* Location modal */
+  .loc-modal-box {
+    background: #0a0a1a;
+    border: 2px solid var(--neon-cyan);
+    border-radius: 12px;
+    padding: 0;
+    max-width: 560px;
+    width: 92%;
+    box-shadow: 0 0 40px rgba(0, 229, 255, 0.25);
+    animation: scaleIn 0.35s ease;
+    overflow: hidden;
+  }
+  .loc-modal-header {
+    background: linear-gradient(90deg, #1a1a2e, #16213e);
+    padding: 12px 16px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    border-bottom: 1px solid rgba(0, 229, 255, 0.3);
+  }
+  .loc-modal-title {
+    color: var(--neon-cyan);
+    font-size: 11px;
+    letter-spacing: 2px;
+    flex: 1;
+    text-align: center;
+  }
+  .loc-modal-close-x {
+    background: transparent;
+    border: none;
+    color: #666;
+    cursor: pointer;
+    font-size: 16px;
+    font-family: inherit;
+    padding: 0 4px;
+    transition: color 0.2s;
+  }
+  .loc-modal-close-x:hover { color: #fff; }
+  .loc-modal-body { padding: 20px 24px 24px; }
+  .loc-campus-map {
+    width: 100%;
+    border-radius: 8px;
+    border: 1px solid rgba(0, 229, 255, 0.3);
+    display: block;
+    margin-bottom: 16px;
+    max-height: 480px;
+    object-fit: contain;
+  }
+  .loc-addr-block {
+    background: rgba(0, 229, 255, 0.05);
+    border: 1px solid rgba(0, 229, 255, 0.3);
+    border-radius: 8px;
+    padding: 14px 16px;
+    margin-bottom: 14px;
+  }
+  .loc-addr-label {
+    color: #888;
+    font-size: 10px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin-bottom: 6px;
+  }
+  .loc-addr-value {
+    color: var(--neon-gold);
+    font-size: 14px;
+    font-weight: 600;
+    text-shadow: 0 0 8px rgba(255,215,0,0.4);
+  }
+  .loc-ggmap-btn {
+    display: block;
+    width: 100%;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    text-align: center;
+    color: var(--neon-green);
+    border: 2px solid var(--neon-green);
+    background: transparent;
+    padding: 10px;
+    border-radius: 8px;
+    text-decoration: none;
+    letter-spacing: 2px;
+    transition: all 0.3s;
+    cursor: pointer;
+  }
+  .loc-ggmap-btn:hover {
+    background: var(--neon-green);
+    color: var(--dark-bg);
+    box-shadow: 0 0 20px rgba(0,255,65,0.5);
+  }
+
   @media (max-width: 600px) {
     .terminal-body { padding: 15px; }
     .info-grid { grid-template-columns: 1fr; }
@@ -535,7 +642,7 @@
   <div class="boot-line">[<span class="boot-warn"> WARN </span>] Fireworks service disabled by request</div>
   <div class="boot-line">[<span class="boot-ok">  OK  </span>] Compiling thiệp_mời.tex ...</div>
   <div class="boot-line">[<span class="boot-ok">  OK  </span>] Loaded 4 years of memories into RAM</div>
-  <div class="boot-line">[<span class="boot-ok">  OK  </span>] Final GPA: 3.8/4.0 — VALIDATED ✓</div>
+  <div class="boot-line">[<span class="boot-ok">  OK  </span>] Final GPA: 3.6/4.0 — VALIDATED ✓</div>
   <div class="boot-line"></div>
   <div class="boot-line boot-progress" id="boot-prog">Loading [          ] 0%</div>
 </div>
@@ -622,22 +729,22 @@
       <div class="code-line">&nbsp;</div>
       <div class="code-line">&nbsp;&nbsp;&nbsp;&nbsp;<span class="special">★ TRÂN TRỌNG KÍNH MỜI ★</span></div>
       <div class="code-line">&nbsp;</div>
-      <div class="code-line">&nbsp;&nbsp;&nbsp;&nbsp;<span class="variable">graduate</span> <span class="operator">=</span> <span class="string">"<span class="editable" contenteditable="true" data-field="name">[Họ và Tên Sinh Viên]</span>"</span></div>
-      <div class="code-line">&nbsp;&nbsp;&nbsp;&nbsp;<span class="variable">degree</span> <span class="operator">=</span> <span class="string">"<span class="editable" contenteditable="true" data-field="degree">Cử nhân Công nghệ Thông tin</span>"</span></div>
-      <div class="code-line">&nbsp;&nbsp;&nbsp;&nbsp;<span class="variable">university</span> <span class="operator">=</span> <span class="string">"<span class="editable" contenteditable="true" data-field="uni">Đại học Bách Khoa</span>"</span></div>
-      <div class="code-line">&nbsp;&nbsp;&nbsp;&nbsp;<span class="variable">gpa</span> <span class="operator">=</span> <span class="number"><span class="editable" contenteditable="true" data-field="gpa">3.8</span></span>  <span class="comment"># Giỏi 🏆</span></div>
+      <div class="code-line">&nbsp;&nbsp;&nbsp;&nbsp;<span class="variable">graduate</span> <span class="operator">=</span> <span class="string">"<span class="editable" contenteditable="true" data-field="name">Trần Hồng Quyền</span>"</span></div>
+      <div class="code-line">&nbsp;&nbsp;&nbsp;&nbsp;<span class="variable">degree</span> <span class="operator">=</span> <span class="string">"<span class="editable" contenteditable="true" data-field="degree">Cử nhân Kỹ thuật phần mềm</span>"</span></div>
+      <div class="code-line">&nbsp;&nbsp;&nbsp;&nbsp;<span class="variable">university</span> <span class="operator">=</span> <span class="string">"<span class="editable" contenteditable="true" data-field="uni">Đại học Công nghệ thông tin</span>"</span></div>
+      <div class="code-line">&nbsp;&nbsp;&nbsp;&nbsp;<span class="variable">gpa</span> <span class="operator">=</span> <span class="number"><span class="editable" contenteditable="true" data-field="gpa">3.6</span></span>  <span class="comment"># Giỏi 🏆</span></div>
       <div class="code-line">&nbsp;</div>
       <div class="code-line">&nbsp;&nbsp;&nbsp;&nbsp;<span class="keyword">def</span> <span class="function">ceremony_details</span><span class="bracket">(</span><span class="variable">self</span><span class="bracket">)</span><span class="operator">:</span></div>
       <div class="code-line">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="keyword">return</span> <span class="bracket">{</span></div>
-      <div class="code-line">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="string">"date"</span><span class="operator">:</span> <span class="string">"<span class="editable" contenteditable="true" data-field="date">15/07/2026</span>"</span><span class="operator">,</span></div>
-      <div class="code-line">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="string">"time"</span><span class="operator">:</span> <span class="string">"<span class="editable" contenteditable="true" data-field="time">08:00 AM</span>"</span><span class="operator">,</span></div>
-      <div class="code-line">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="string">"venue"</span><span class="operator">:</span> <span class="string">"<span class="editable" contenteditable="true" data-field="venue">Hội trường lớn - Tầng 5</span>"</span><span class="operator">,</span></div>
+      <div class="code-line">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="string">"date"</span><span class="operator">:</span> <span class="string">"<span class="editable" contenteditable="true" data-field="date">10/06/2026</span>"</span><span class="operator">,</span></div>
+      <div class="code-line">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="string">"time"</span><span class="operator">:</span> <span class="string">"<span class="editable" contenteditable="true" data-field="time">10:30 AM</span>"</span><span class="operator">,</span></div>
+      <div class="code-line">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="string">"venue"</span><span class="operator">:</span> <span class="string">"<span class="editable" contenteditable="true" data-field="venue">Khu phố 6, P. Linh Trung, TP Thủ Đức</span>"</span><span class="operator">,</span></div>
       <div class="code-line">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="string">"dress_code"</span><span class="operator">:</span> <span class="string">"Lễ phục tốt nghiệp"</span><span class="operator">,</span></div>
       <div class="code-line">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="bracket">}</span></div>
       <div class="code-line">&nbsp;</div>
       <div class="code-line">&nbsp;&nbsp;&nbsp;&nbsp;<span class="keyword">def</span> <span class="function">message</span><span class="bracket">(</span><span class="variable">self</span><span class="bracket">)</span><span class="operator">:</span></div>
-      <div class="code-line">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="keyword">print</span><span class="bracket">(</span><span class="string">"Sự hiện diện của Quý vị là niềm vinh dự"</span><span class="bracket">)</span></div>
-      <div class="code-line">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="keyword">print</span><span class="bracket">(</span><span class="string">"lớn lao cho buổi lễ của chúng tôi."</span><span class="bracket">)</span></div>
+      <div class="code-line">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="keyword">print</span><span class="bracket">(</span><span class="string">"Sự hiện diện của mọi người là niềm vinh dự"</span><span class="bracket">)</span></div>
+      <div class="code-line">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="keyword">print</span><span class="bracket">(</span><span class="string">"lớn lao cho buổi lễ của mình."</span><span class="bracket">)</span></div>
       <div class="code-line">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="keyword">return</span> <span class="special">∞</span> <span class="comment"># gratitude.max()</span></div>
       <div class="code-line">&nbsp;</div>
       <div class="code-line"><span class="comment"># ═══════════════════════════════════════</span></div>
@@ -652,7 +759,7 @@
 │ DATE │
 └──────┘</span>
           <div class="info-label">Ngày</div>
-          <div class="info-value" id="info-date">15 / 07 / 2026</div>
+          <div class="info-value" id="info-date">10 / 06 / 2026</div>
         </div>
         <div class="info-box">
           <span class="info-icon">┌──────┐
@@ -660,7 +767,7 @@
 │ TIME │
 └──────┘</span>
           <div class="info-label">Thời gian</div>
-          <div class="info-value" id="info-time">08:00 AM</div>
+          <div class="info-value" id="info-time">10:30 AM</div>
         </div>
         <div class="info-box">
           <span class="info-icon">┌──────┐
@@ -668,7 +775,8 @@
 │ ADDR │
 └──────┘</span>
           <div class="info-label">Địa điểm</div>
-          <div class="info-value" id="info-venue">Hội trường lớn</div>
+          <div class="info-value" id="info-venue">Khu phố 6, P. Linh Trung, TP Thủ Đức</div>
+          <button class="map-link" id="loc-detail-btn">📍 Xem chi tiết</button>
         </div>
       </div>
 
@@ -676,6 +784,29 @@
         <button class="action-btn" id="rsvp-btn">&gt; XÁC NHẬN _</button>
         <button class="action-btn cyan" id="share-btn">⎘ CHIA SẺ</button>
         <button class="action-btn gold" id="print-btn">⎙ IN THIỆP</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Location detail modal -->
+  <div class="modal-overlay" id="loc-modal">
+    <div class="loc-modal-box">
+      <div class="loc-modal-header">
+        <span class="terminal-dot dot-red"></span>
+        <span class="terminal-dot dot-yellow"></span>
+        <span class="terminal-dot dot-green"></span>
+        <span class="loc-modal-title">&gt; LOCATION_DETAIL.sh</span>
+        <button class="loc-modal-close-x" id="loc-modal-close-x">✕</button>
+      </div>
+      <div class="loc-modal-body">
+        <img src="campus-map.png" alt="Sơ đồ khuôn viên trường" class="loc-campus-map" id="loc-campus-img">
+        <div class="loc-addr-block">
+          <div class="loc-addr-label">Địa chỉ</div>
+          <div class="loc-addr-value">📍 Khu phố 6, P. Linh Trung, TP Thủ Đức, TP.HCM</div>
+        </div>
+        <a href="https://maps.app.goo.gl/kwEtJrWWMVmAj1NPA" target="_blank" class="loc-ggmap-btn">
+          &gt; MỞ GOOGLE MAPS _
+        </a>
       </div>
     </div>
   </div>
@@ -752,7 +883,7 @@
 
 <div class="status-bar">
   <div>$ status: <span>READY</span> | uptime: <span id="uptime">00:00:00</span></div>
-  <div>FPS: <span id="fps">60</span> | mem: <span>3.8/4.0 GPA</span> <span class="heart">♥</span></div>
+  <div>FPS: <span id="fps">60</span> | mem: <span>3.6/4.0 GPA</span> <span class="heart">♥</span></div>
 </div>
 
 <script>
@@ -1145,6 +1276,16 @@ document.getElementById('modal-close').addEventListener('click', () => {
 
 document.getElementById('modal').addEventListener('click', (e) => {
   if (e.target === e.currentTarget) document.getElementById('modal').classList.remove('active');
+});
+
+document.getElementById('loc-detail-btn').addEventListener('click', () => {
+  document.getElementById('loc-modal').classList.add('active');
+});
+document.getElementById('loc-modal-close-x').addEventListener('click', () => {
+  document.getElementById('loc-modal').classList.remove('active');
+});
+document.getElementById('loc-modal').addEventListener('click', (e) => {
+  if (e.target === e.currentTarget) document.getElementById('loc-modal').classList.remove('active');
 });
 
 let konami = [];
